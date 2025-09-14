@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body - Two LED alternating control
+  * @brief          : Main program body - Traffic Light Simulation
   ******************************************************************************
   * @attention
   *
@@ -27,11 +27,18 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef enum {
+    TRAFFIC_RED = 0,
+    TRAFFIC_YELLOW = 1,
+    TRAFFIC_GREEN = 2
+} TrafficState_t;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define RED_DURATION    5000    // 5 seconds
+#define YELLOW_DURATION 2000    // 2 seconds
+#define GREEN_DURATION  3000    // 3 seconds
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -42,18 +49,55 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+TrafficState_t currentState = TRAFFIC_RED;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
-
+void Traffic_Light_Control(TrafficState_t state);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/**
+  * @brief  Controls the traffic light LEDs based on current state
+  * @param  state: Current traffic light state
+  * @retval None
+  */
+void Traffic_Light_Control(TrafficState_t state)
+{
+    // Turn off all LEDs first (ensure clean state)
+    HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
+
+    // Small delay to ensure GPIO state change
+    HAL_Delay(10);
+
+    // Turn on the appropriate LED based on state
+    switch(state)
+    {
+        case TRAFFIC_RED:
+            HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
+            break;
+
+        case TRAFFIC_YELLOW:
+            HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_SET);
+            break;
+
+        case TRAFFIC_GREEN:
+            HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
+            break;
+
+        default:
+            // Default to RED for safety
+            HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
+            break;
+    }
+}
 
 /* USER CODE END 0 */
 
@@ -87,9 +131,9 @@ int main(void)
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
-  // Initialize LEDs state - Start with RED ON, YELLOW OFF
-  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
+  // Initialize traffic light - Start with RED
+  currentState = TRAFFIC_RED;
+  Traffic_Light_Control(currentState);
 
   /* USER CODE END 2 */
 
@@ -99,12 +143,35 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    // Toggle both LEDs simultaneously to create alternating pattern
-    HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-    HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
+    switch(currentState)
+    {
+        case TRAFFIC_RED:
+            // RED light for 5 seconds
+            HAL_Delay(RED_DURATION);
+            currentState = TRAFFIC_YELLOW;
+            Traffic_Light_Control(currentState);
+            break;
 
-    // Wait 2 seconds before next state change
-    HAL_Delay(2000);
+        case TRAFFIC_YELLOW:
+            // YELLOW light for 2 seconds
+            HAL_Delay(YELLOW_DURATION);
+            currentState = TRAFFIC_GREEN;
+            Traffic_Light_Control(currentState);
+            break;
+
+        case TRAFFIC_GREEN:
+            // GREEN light for 3 seconds
+            HAL_Delay(GREEN_DURATION);
+            currentState = TRAFFIC_RED;
+            Traffic_Light_Control(currentState);
+            break;
+
+        default:
+            // Safety fallback to RED
+            currentState = TRAFFIC_RED;
+            Traffic_Light_Control(currentState);
+            break;
+    }
 
     /* USER CODE BEGIN 3 */
   }
@@ -121,7 +188,7 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
+  * in the RCC_OscInitStructure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -161,19 +228,28 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : LED_RED_Pin LED_YELLOW_Pin */
+  /*Configure GPIO pins : LED_RED_Pin */
   GPIO_InitStruct.Pin = LED_RED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_RED_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : LED_YELLOW_Pin */
   GPIO_InitStruct.Pin = LED_YELLOW_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_YELLOW_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LED_GREEN_Pin */
+  GPIO_InitStruct.Pin = LED_GREEN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_GREEN_GPIO_Port, &GPIO_InitStruct);
 
 }
 
