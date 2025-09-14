@@ -1,1 +1,3 @@
-TRAFFIC_LIGHTS.c:13:6:TRAFFIC_LIGHTS_Update	16	static
+TRAFFIC_LIGHTS.c:14:13:turn_off_all_leds	8	static
+TRAFFIC_LIGHTS.c:19:13:turn_on_leds	16	static
+TRAFFIC_LIGHTS.c:23:6:TRAFFIC_LIGHTS_Update	16	static
