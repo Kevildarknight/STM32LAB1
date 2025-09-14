@@ -1,8 +1,6 @@
-main.c:77:6:set_north_south_lights	16	static
-main.c:90:6:set_east_west_lights	16	static
-main.c:100:6:turn_off_all_lights	8	static
-main.c:109:6:traffic_light_control	16	static
-main.c:201:5:main	8	static
-main.c:251:6:SystemClock_Config	72	static
-main.c:287:13:MX_GPIO_Init	32	static
-main.c:317:6:Error_Handler	4	static,ignoring_inline_asm
+main.c:43:6:set_lights	24	static
+main.c:60:6:traffic_control	24	static
+main.c:117:5:main	16	static
+main.c:144:6:SystemClock_Config	72	static
+main.c:172:13:MX_GPIO_Init	32	static
+main.c:194:6:Error_Handler	4	static,ignoring_inline_asm
