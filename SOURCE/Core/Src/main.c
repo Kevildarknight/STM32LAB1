@@ -2,112 +2,150 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Simple 4-Way Traffic Light Controller (4 States)
-  *                   - YELLOW: 2 seconds
-  *                   - GREEN: 3 seconds
-  *                   - No delay between transitions
+  * @brief          : 7-Segment Display Controller
+  *                   Common Anode 7-Segment (Active Low)
+  *                   Pins: PB0-PB6 (a,b,c,d,e,f,g)
   ******************************************************************************
   */
 /* USER CODE END Header */
 
 #include "main.h"
 
-/* Traffic Light States (1 to 4) */
-typedef enum {
-    STATE_1 = 1,    // North-South GREEN, East-West RED
-    STATE_2,        // North-South YELLOW, East-West RED
-    STATE_3,        // North-South RED, East-West GREEN
-    STATE_4         // North-South RED, East-West YELLOW
-} TrafficState_t;
-
-/* Timing definitions (in milliseconds) */
-#define GREEN_TIME    3000   // 3 seconds
-#define YELLOW_TIME   2000   // 2 seconds
-
-/* Global variables */
-TrafficState_t current_state = STATE_1;
-uint32_t state_timer = 0;
-
 /* Function prototypes */
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-void traffic_control(void);
-void set_lights(uint8_t ns_red, uint8_t ns_yellow, uint8_t ns_green,
-                uint8_t ew_red, uint8_t ew_yellow, uint8_t ew_green);
+void display7SEG(int num);
 
 /**
- * @brief Set traffic light states
- * @param ns_red, ns_yellow, ns_green: North-South lights (1=ON, 0=OFF)
- * @param ew_red, ew_yellow, ew_green: East-West lights (1=ON, 0=OFF)
+ * @brief Display digit on 7-segment display
+ * @param num: Number to display (0-9)
+ * @note: Common Anode - Logic 0 turns ON segment, Logic 1 turns OFF segment
+ *        Pin mapping: PB0=a, PB1=b, PB2=c, PB3=d, PB4=e, PB5=f, PB6=g
  */
-void set_lights(uint8_t ns_red, uint8_t ns_yellow, uint8_t ns_green,
-                uint8_t ew_red, uint8_t ew_yellow, uint8_t ew_green)
+void display7SEG(int num)
 {
-    // North-South lights (RED1, YELLOW1, GREEN1)
-    HAL_GPIO_WritePin(GPIOA, RED1_Pin, ns_red ? GPIO_PIN_RESET : GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOA, YELLOW1_Pin, ns_yellow ? GPIO_PIN_RESET : GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOA, GREEN1_Pin, ns_green ? GPIO_PIN_RESET : GPIO_PIN_SET);
-
-    // East-West lights (RED2, YELLOW2, GREEN2)
-    HAL_GPIO_WritePin(GPIOA, RED2_Pin, ew_red ? GPIO_PIN_RESET : GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOA, YELLOW2_Pin, ew_yellow ? GPIO_PIN_RESET : GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOA, GREEN2_Pin, ew_green ? GPIO_PIN_RESET : GPIO_PIN_SET);
-}
-
-/**
- * @brief Main traffic light control function
- */
-void traffic_control(void)
-{
-    uint32_t current_time = HAL_GetTick();
-    uint32_t elapsed_time = current_time - state_timer;
-
-    switch(current_state)
+    switch(num)
     {
-        case STATE_1:
-            // North-South: GREEN, East-West: RED
-            set_lights(0, 0, 1,   1, 0, 0);
+    case 0:
+                // Display "0" - segments a,b,c,d,e,f ON, g OFF
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // a = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);  // b = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);  // c = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);  // d = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);  // e = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);  // f = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);    // g = 1 (OFF)
+                break;
 
-            if(elapsed_time >= GREEN_TIME) {
-                current_state = STATE_2;
-                state_timer = current_time;
-            }
-            break;
+            case 1:
+                // Display "1" - segments b,c ON, others OFF
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);    // a = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);  // b = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);  // c = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);    // d = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);    // e = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);    // f = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);    // g = 1 (OFF)
+                break;
 
-        case STATE_2:
-            // North-South: YELLOW, East-West: RED
-            set_lights(0, 1, 0,   1, 0, 0);
+            case 2:
+                // Display "2" - segments a,b,g,e,d ON, c,f OFF
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // a = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);  // b = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);    // c = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);  // d = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);  // e = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);    // f = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);  // g = 0 (ON)
+                break;
 
-            if(elapsed_time >= YELLOW_TIME) {
-                current_state = STATE_3;
-                state_timer = current_time;
-            }
-            break;
+            case 3:
+                // Display "3" - segments a,b,g,c,d ON, e,f OFF
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // a = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);  // b = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);  // c = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);  // d = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);    // e = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);    // f = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);  // g = 0 (ON)
+                break;
 
-        case STATE_3:
-            // North-South: RED, East-West: GREEN
-            set_lights(1, 0, 0,   0, 0, 1);
+            case 4:
+                // Display "4" - segments f,g,b,c ON, a,e,d OFF
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);    // a = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);  // b = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);  // c = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);    // d = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);    // e = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);  // f = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);  // g = 0 (ON)
+                break;
 
-            if(elapsed_time >= GREEN_TIME) {
-                current_state = STATE_4;
-                state_timer = current_time;
-            }
-            break;
+            case 5:
+                // Display "5" - segments a,f,g,c,d ON, b,e OFF
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // a = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);    // b = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);  // c = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);  // d = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);    // e = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);  // f = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);  // g = 0 (ON)
+                break;
 
-        case STATE_4:
-            // North-South: RED, East-West: YELLOW
-            set_lights(1, 0, 0,   0, 1, 0);
+            case 6:
+                // Display "6" - segments a,f,g,e,d,c ON, b OFF
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // a = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);    // b = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);  // c = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);  // d = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);  // e = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);  // f = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);  // g = 0 (ON)
+                break;
 
-            if(elapsed_time >= YELLOW_TIME) {
-                current_state = STATE_1;  // Go directly to North-South GREEN
-                state_timer = current_time;
-            }
-            break;
+            case 7:
+                // Display "7" - segments a,b,c ON, others OFF
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // a = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);  // b = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);  // c = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);    // d = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);    // e = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);    // f = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);    // g = 1 (OFF)
+                break;
 
-        default:
-            current_state = STATE_1;
-            state_timer = current_time;
-            break;
+            case 8:
+                // Display "8" - all segments ON
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // a = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);  // b = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);  // c = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);  // d = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);  // e = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);  // f = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);  // g = 0 (ON)
+                break;
+
+            case 9:
+                // Display "9" - segments a,b,c,d,f,g ON, e OFF
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // a = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);  // b = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);  // c = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);  // d = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);    // e = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);  // f = 0 (ON)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);  // g = 0 (ON)
+                break;
+
+            default:
+                // Turn off all segments for invalid input
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);    // a = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);    // b = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);    // c = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);    // d = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);    // e = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);    // f = 1 (OFF)
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);    // g = 1 (OFF)
+                break;
     }
 }
 
@@ -125,16 +163,13 @@ int main(void)
     /* Initialize GPIO */
     MX_GPIO_Init();
 
-    /* Initialize traffic light system */
-    set_lights(0, 0, 0, 0, 0, 0);  // Turn off all lights
-    state_timer = HAL_GetTick();
-    current_state = STATE_1;
-
-    /* Main loop */
+    /* Test the 7-segment display */
+    int counter = 0;
     while (1)
     {
-        traffic_control();
-        HAL_Delay(50);  // Small delay for stability
+        if(counter >= 10) counter = 0;
+        display7SEG(counter++);
+        HAL_Delay(1000);
     }
 }
 
@@ -173,19 +208,19 @@ static void MX_GPIO_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-    /* Enable GPIO Port A Clock */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
+    /* Enable GPIO Port B Clock */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    /* Configure GPIO pins as outputs */
-    HAL_GPIO_WritePin(GPIOA, RED1_Pin|YELLOW1_Pin|GREEN1_Pin|RED2_Pin
-                          |YELLOW2_Pin|GREEN2_Pin, GPIO_PIN_RESET);
+    /* Configure GPIO pins as outputs (PB0-PB6 for 7-segment) */
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|
+                           GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_SET);
 
-    GPIO_InitStruct.Pin = RED1_Pin|YELLOW1_Pin|GREEN1_Pin|RED2_Pin
-                          |YELLOW2_Pin|GREEN2_Pin;
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|
+                         GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
 /**

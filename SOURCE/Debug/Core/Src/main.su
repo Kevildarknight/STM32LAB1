@@ -1,6 +1,5 @@
-main.c:43:6:set_lights	24	static
-main.c:60:6:traffic_control	24	static
-main.c:117:5:main	16	static
-main.c:144:6:SystemClock_Config	72	static
-main.c:172:13:MX_GPIO_Init	32	static
-main.c:194:6:Error_Handler	4	static,ignoring_inline_asm
+main.c:25:6:display7SEG	16	static
+main.c:155:5:main	16	static
+main.c:179:6:SystemClock_Config	72	static
+main.c:207:13:MX_GPIO_Init	32	static
+main.c:229:6:Error_Handler	4	static,ignoring_inline_asm
