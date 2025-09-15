@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body
+  * @brief          : Main program body - Complete Analog Clock Implementation
   ******************************************************************************
   * @attention
   *
@@ -22,34 +22,22 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+// Function prototypes
+void clearAllClock(void);
+void setNumberOnClock(int num);
+void clearNumberOnClock(int num);
+
+// Exercise 7: Clear all LEDs
 void clearAllClock(void)
 {
     HAL_GPIO_WritePin(GPIOA, LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin
                             |LED5_Pin|LED6_Pin|LED7_Pin|LED8_Pin
-                            |LED9_Pin|LED10_Pin|LED11_Pin|LED12_Pin, GPIO_PIN_RESET);
+                            |LED9_Pin|LED10_Pin|LED11_Pin|LED12_Pin, GPIO_PIN_SET);
 }
+
+// Exercise 8: Set specific LED based on number (0-11)
 void setNumberOnClock(int num)
-{
-    switch(num)
-    {
-        case 0:  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);   break;  // 12 o'clock position
-        case 1:  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);   break;  // 1 o'clock position
-        case 2:  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_SET);   break;  // 2 o'clock position
-        case 3:  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, GPIO_PIN_SET);   break;  // 3 o'clock position
-        case 4:  HAL_GPIO_WritePin(LED5_GPIO_Port, LED5_Pin, GPIO_PIN_SET);   break;  // 4 o'clock position
-        case 5:  HAL_GPIO_WritePin(LED6_GPIO_Port, LED6_Pin, GPIO_PIN_SET);   break;  // 5 o'clock position
-        case 6:  HAL_GPIO_WritePin(LED7_GPIO_Port, LED7_Pin, GPIO_PIN_SET);   break;  // 6 o'clock position
-        case 7:  HAL_GPIO_WritePin(LED8_GPIO_Port, LED8_Pin, GPIO_PIN_SET);   break;  // 7 o'clock position
-        case 8:  HAL_GPIO_WritePin(LED9_GPIO_Port, LED9_Pin, GPIO_PIN_SET);   break;  // 8 o'clock position
-        case 9:  HAL_GPIO_WritePin(LED10_GPIO_Port, LED10_Pin, GPIO_PIN_SET); break;  // 9 o'clock position
-        case 10: HAL_GPIO_WritePin(LED11_GPIO_Port, LED11_Pin, GPIO_PIN_SET); break;  // 10 o'clock position
-        case 11: HAL_GPIO_WritePin(LED12_GPIO_Port, LED12_Pin, GPIO_PIN_SET); break;  // 11 o'clock position
-        default:
-            // Invalid input, do nothing or could add error handling
-            break;
-    }
-}
-void clearNumberOnClock(int num)
 {
     switch(num)
     {
@@ -65,11 +53,31 @@ void clearNumberOnClock(int num)
         case 9:  HAL_GPIO_WritePin(LED10_GPIO_Port, LED10_Pin, GPIO_PIN_RESET); break;  // 9 o'clock position
         case 10: HAL_GPIO_WritePin(LED11_GPIO_Port, LED11_Pin, GPIO_PIN_RESET); break;  // 10 o'clock position
         case 11: HAL_GPIO_WritePin(LED12_GPIO_Port, LED12_Pin, GPIO_PIN_RESET); break;  // 11 o'clock position
-        default:
-            // Invalid input, do nothing or could add error handling
-            break;
+        default: break;
     }
 }
+
+// Exercise 9: Clear specific LED based on number (0-11)
+void clearNumberOnClock(int num)
+{
+    switch(num)
+    {
+        case 0:  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);   break;
+        case 1:  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);   break;
+        case 2:  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_SET);   break;
+        case 3:  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, GPIO_PIN_SET);   break;
+        case 4:  HAL_GPIO_WritePin(LED5_GPIO_Port, LED5_Pin, GPIO_PIN_SET);   break;
+        case 5:  HAL_GPIO_WritePin(LED6_GPIO_Port, LED6_Pin, GPIO_PIN_SET);   break;
+        case 6:  HAL_GPIO_WritePin(LED7_GPIO_Port, LED7_Pin, GPIO_PIN_SET);   break;
+        case 7:  HAL_GPIO_WritePin(LED8_GPIO_Port, LED8_Pin, GPIO_PIN_SET);   break;
+        case 8:  HAL_GPIO_WritePin(LED9_GPIO_Port, LED9_Pin, GPIO_PIN_SET);   break;
+        case 9:  HAL_GPIO_WritePin(LED10_GPIO_Port, LED10_Pin, GPIO_PIN_SET); break;
+        case 10: HAL_GPIO_WritePin(LED11_GPIO_Port, LED11_Pin, GPIO_PIN_SET); break;
+        case 11: HAL_GPIO_WritePin(LED12_GPIO_Port, LED12_Pin, GPIO_PIN_SET); break;
+        default: break;
+    }
+}
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -79,6 +87,7 @@ void clearNumberOnClock(int num)
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -101,6 +110,113 @@ static void MX_GPIO_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+// Clock system variables
+typedef struct {
+    uint8_t hours;
+    uint8_t minutes;
+    uint8_t seconds;
+    uint32_t last_update;
+} ClockTime_t;
+
+// Initialize clock to 12:00:00
+ClockTime_t clock_time = {12, 0, 0, 0};
+
+/**
+ * @brief Calculate hour hand position with smooth movement
+ * @param hour: Current hour (1-12)
+ * @param minute: Current minute (0-59) for smooth hour hand movement
+ * @retval LED position (0-11)
+ */
+uint8_t getHourHandPosition(uint8_t hour, uint8_t minute) {
+    // Convert to 12-hour format
+    uint8_t h = (hour == 0) ? 12 : hour;
+    if (h > 12) h -= 12;
+
+    // Calculate base position (hour * 5 positions per hour on 60-minute clock)
+    // Then add minute offset for smooth movement
+    uint16_t total_minutes = ((h - 1) * 60) + minute;  // Total minutes from 12 o'clock
+    uint8_t position = (total_minutes / 60) % 12;  // Convert back to 12 positions
+
+    return position;
+}
+
+/**
+ * @brief Calculate minute hand position
+ * @param minute: Current minute (0-59)
+ * @retval LED position (0-11)
+ */
+uint8_t getMinuteHandPosition(uint8_t minute) {
+    // Map 60 minutes to 12 positions
+    // 0-4 min -> pos 0, 5-9 min -> pos 1, etc.
+    return (minute * 12) / 60;
+}
+
+/**
+ * @brief Calculate second hand position
+ * @param second: Current second (0-59)
+ * @retval LED position (0-11)
+ */
+uint8_t getSecondHandPosition(uint8_t second) {
+    // Map 60 seconds to 12 positions
+    // 0-4 sec -> pos 0, 5-9 sec -> pos 1, etc.
+    return (second * 12) / 60;
+}
+
+/**
+ * @brief Display the analog clock on LEDs
+ * Shows hour, minute, and second hands simultaneously
+ */
+void displayAnalogClock(void) {
+    // Clear all LEDs first
+    clearAllClock();
+
+    // Calculate hand positions
+    uint8_t hour_pos = getHourHandPosition(clock_time.hours, clock_time.minutes);
+    uint8_t minute_pos = getMinuteHandPosition(clock_time.minutes);
+    uint8_t second_pos = getSecondHandPosition(clock_time.seconds);
+
+    // Light up the LEDs for each hand
+    setNumberOnClock(hour_pos);    // Hour hand (moves slowly)
+    setNumberOnClock(minute_pos);  // Minute hand (moves every 5 minutes)
+    setNumberOnClock(second_pos);  // Second hand (moves every 5 seconds)
+}
+
+/**
+ * @brief Update the clock time (increment by 1 second)
+ */
+void updateClockTime(void) {
+    clock_time.seconds++;
+
+    if (clock_time.seconds >= 60) {
+        clock_time.seconds = 0;
+        clock_time.minutes++;
+
+        if (clock_time.minutes >= 60) {
+            clock_time.minutes = 0;
+            clock_time.hours++;
+
+            if (clock_time.hours > 12) {
+                clock_time.hours = 1;  // 12-hour format
+            }
+        }
+    }
+}
+
+/**
+ * @brief Set the clock time manually
+ * @param hours: Hour (1-12)
+ * @param minutes: Minutes (0-59)
+ * @param seconds: Seconds (0-59)
+ */
+void setClockTime(uint8_t hours, uint8_t minutes, uint8_t seconds) {
+    clock_time.hours = (hours > 12) ? (hours - 12) : hours;
+    if (clock_time.hours == 0) clock_time.hours = 12;  // Handle 0 -> 12
+
+    clock_time.minutes = (minutes < 60) ? minutes : 0;
+    clock_time.seconds = (seconds < 60) ? seconds : 0;
+}
+
 
 /* USER CODE END 0 */
 
@@ -132,35 +248,50 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+
   /* USER CODE BEGIN 2 */
 
+  // Exercise 10: Initialize the analog clock system
+  // Set starting time (you can modify this)
+  setClockTime(3, 15, 45);  // Start at 3:15:45
+
+  // Initialize timing
+  clock_time.last_update = HAL_GetTick();
+
+  // Display initial clock state
+  displayAnalogClock();
+
   /* USER CODE END 2 */
-  int counter=0;
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_GPIO_WritePin(GPIOA, LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin
-	  	                            |LED5_Pin|LED6_Pin|LED7_Pin|LED8_Pin
-	  	                            |LED9_Pin|LED10_Pin|LED11_Pin|LED12_Pin, GPIO_PIN_SET);
-	  switch(counter) {
-	  	        case 0: HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, RESET); break;
-	  	        case 1: HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET); break;
-	  	        case 2: HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, RESET); break;
-	  	        case 3: HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, RESET); break;
-	  	        case 4: HAL_GPIO_WritePin(LED5_GPIO_Port, LED5_Pin, RESET); break;
-	  	        case 5: HAL_GPIO_WritePin(LED6_GPIO_Port, LED6_Pin, RESET); break;
-	  	        case 6: HAL_GPIO_WritePin(LED7_GPIO_Port, LED7_Pin, RESET); break;
-	  	        case 7: HAL_GPIO_WritePin(LED8_GPIO_Port, LED8_Pin, RESET); break;
-	  	        case 8: HAL_GPIO_WritePin(LED9_GPIO_Port, LED9_Pin, RESET); break;
-	  	        case 9: HAL_GPIO_WritePin(LED10_GPIO_Port, LED10_Pin, RESET); break;
-	  	        case 10: HAL_GPIO_WritePin(LED11_GPIO_Port, LED11_Pin, RESET); break;
-	  	        case 11: HAL_GPIO_WritePin(LED12_GPIO_Port, LED12_Pin, RESET); break;
-	  	    }
-	  HAL_Delay(1000);
-	  counter++;
-	  if(counter>=12) counter=0;
+
+    // Exercise 10: Main analog clock loop
+    // Update time every 1000ms (1 second)
+    uint32_t current_tick = HAL_GetTick();
+
+//    if (current_tick - clock_time.last_update >= 1000) {
+//        // Update the time
+//        updateClockTime();
+//
+//        // Display the updated clock
+//        displayAnalogClock();
+//
+//        // Update the timestamp
+//        clock_time.last_update = current_tick;
+//    }
+    if (current_tick - clock_time.last_update >= 100) {
+            updateClockTime();
+            displayAnalogClock();
+            clock_time.last_update = current_tick;
+        }
+
+    // Small delay to prevent excessive CPU usage
+    HAL_Delay(10);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -176,7 +307,7 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
+  * in the RCC_OscInitStructure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -213,10 +344,10 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
+  /*Configure GPIO pin Output Level - SET for active low LEDs (turn OFF initially) */
   HAL_GPIO_WritePin(GPIOA, LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin
                           |LED5_Pin|LED6_Pin|LED7_Pin|LED8_Pin
-                          |LED9_Pin|LED10_Pin|LED11_Pin|LED12_Pin, GPIO_PIN_RESET);
+                          |LED9_Pin|LED10_Pin|LED11_Pin|LED12_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : LED1_Pin LED2_Pin LED3_Pin LED4_Pin
                            LED5_Pin LED6_Pin LED7_Pin LED8_Pin
@@ -228,10 +359,37 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+ * @brief Demo function to speed up clock for testing
+ * Call this instead of the normal update for faster demonstration
+ */
+void demoFastClock(void) {
+    uint32_t current_tick = HAL_GetTick();
+
+    // Update every 100ms instead of 1000ms for demo
+    if (current_tick - clock_time.last_update >= 100) {
+        updateClockTime();
+        displayAnalogClock();
+        clock_time.last_update = current_tick;
+    }
+}
+
+/**
+ * @brief Test all LED positions sequentially
+ * Useful for hardware testing
+ */
+void testAllLEDs(void) {
+    for (int i = 0; i < 12; i++) {
+        clearAllClock();
+        setNumberOnClock(i);
+        HAL_Delay(500);
+    }
+    clearAllClock();
+}
 
 /* USER CODE END 4 */
 
