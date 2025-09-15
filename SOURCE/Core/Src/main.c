@@ -22,7 +22,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+void clearAllClock();
+void setNumberOnClock(intnum);
+void clearNumberOnClock(int num);
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
