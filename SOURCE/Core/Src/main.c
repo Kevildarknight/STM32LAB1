@@ -22,9 +22,54 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-void clearAllClock();
-void setNumberOnClock(intnum);
-void clearNumberOnClock(int num);
+void clearAllClock(void)
+{
+    HAL_GPIO_WritePin(GPIOA, LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin
+                            |LED5_Pin|LED6_Pin|LED7_Pin|LED8_Pin
+                            |LED9_Pin|LED10_Pin|LED11_Pin|LED12_Pin, GPIO_PIN_RESET);
+}
+void setNumberOnClock(int num)
+{
+    switch(num)
+    {
+        case 0:  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);   break;  // 12 o'clock position
+        case 1:  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);   break;  // 1 o'clock position
+        case 2:  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_SET);   break;  // 2 o'clock position
+        case 3:  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, GPIO_PIN_SET);   break;  // 3 o'clock position
+        case 4:  HAL_GPIO_WritePin(LED5_GPIO_Port, LED5_Pin, GPIO_PIN_SET);   break;  // 4 o'clock position
+        case 5:  HAL_GPIO_WritePin(LED6_GPIO_Port, LED6_Pin, GPIO_PIN_SET);   break;  // 5 o'clock position
+        case 6:  HAL_GPIO_WritePin(LED7_GPIO_Port, LED7_Pin, GPIO_PIN_SET);   break;  // 6 o'clock position
+        case 7:  HAL_GPIO_WritePin(LED8_GPIO_Port, LED8_Pin, GPIO_PIN_SET);   break;  // 7 o'clock position
+        case 8:  HAL_GPIO_WritePin(LED9_GPIO_Port, LED9_Pin, GPIO_PIN_SET);   break;  // 8 o'clock position
+        case 9:  HAL_GPIO_WritePin(LED10_GPIO_Port, LED10_Pin, GPIO_PIN_SET); break;  // 9 o'clock position
+        case 10: HAL_GPIO_WritePin(LED11_GPIO_Port, LED11_Pin, GPIO_PIN_SET); break;  // 10 o'clock position
+        case 11: HAL_GPIO_WritePin(LED12_GPIO_Port, LED12_Pin, GPIO_PIN_SET); break;  // 11 o'clock position
+        default:
+            // Invalid input, do nothing or could add error handling
+            break;
+    }
+}
+void clearNumberOnClock(int num)
+{
+    switch(num)
+    {
+        case 0:  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);   break;  // 12 o'clock position
+        case 1:  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);   break;  // 1 o'clock position
+        case 2:  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_RESET);   break;  // 2 o'clock position
+        case 3:  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, GPIO_PIN_RESET);   break;  // 3 o'clock position
+        case 4:  HAL_GPIO_WritePin(LED5_GPIO_Port, LED5_Pin, GPIO_PIN_RESET);   break;  // 4 o'clock position
+        case 5:  HAL_GPIO_WritePin(LED6_GPIO_Port, LED6_Pin, GPIO_PIN_RESET);   break;  // 5 o'clock position
+        case 6:  HAL_GPIO_WritePin(LED7_GPIO_Port, LED7_Pin, GPIO_PIN_RESET);   break;  // 6 o'clock position
+        case 7:  HAL_GPIO_WritePin(LED8_GPIO_Port, LED8_Pin, GPIO_PIN_RESET);   break;  // 7 o'clock position
+        case 8:  HAL_GPIO_WritePin(LED9_GPIO_Port, LED9_Pin, GPIO_PIN_RESET);   break;  // 8 o'clock position
+        case 9:  HAL_GPIO_WritePin(LED10_GPIO_Port, LED10_Pin, GPIO_PIN_RESET); break;  // 9 o'clock position
+        case 10: HAL_GPIO_WritePin(LED11_GPIO_Port, LED11_Pin, GPIO_PIN_RESET); break;  // 10 o'clock position
+        case 11: HAL_GPIO_WritePin(LED12_GPIO_Port, LED12_Pin, GPIO_PIN_RESET); break;  // 11 o'clock position
+        default:
+            // Invalid input, do nothing or could add error handling
+            break;
+    }
+}
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
