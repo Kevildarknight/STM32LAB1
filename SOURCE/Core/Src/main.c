@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body - Complete Analog Clock Implementation
+  * @brief          : Main program body - Simplified Analog Clock Implementation
   ******************************************************************************
   * @attention
   *
@@ -111,32 +111,29 @@ static void MX_GPIO_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// Clock system variables
+// Simplified clock system variables
 typedef struct {
     uint8_t hours;
     uint8_t minutes;
     uint8_t seconds;
-    uint32_t last_update;
 } ClockTime_t;
 
-// Initialize clock to 12:00:00
-ClockTime_t clock_time = {12, 0, 0, 0};
+// Initialize clock
+ClockTime_t clock_time = {12, 00, 00};
 
 /**
  * @brief Calculate hour hand position with smooth movement
  * @param hour: Current hour (1-12)
  * @param minute: Current minute (0-59) for smooth hour hand movement
- * @retval LED position (0-11)
+ * @retval LED position (0-11) where 0=1 o'clock, 11=12 o'clock
  */
 uint8_t getHourHandPosition(uint8_t hour, uint8_t minute) {
     // Convert to 12-hour format
     uint8_t h = (hour == 0) ? 12 : hour;
     if (h > 12) h -= 12;
 
-    // Calculate base position (hour * 5 positions per hour on 60-minute clock)
-    // Then add minute offset for smooth movement
-    uint16_t total_minutes = ((h - 1) * 60) + minute;  // Total minutes from 12 o'clock
-    uint8_t position = (total_minutes / 60) % 12;  // Convert back to 12 positions
+    // Calculate position: 1 o'clock = 0, 2 o'clock = 1, ..., 12 o'clock = 11
+    uint8_t position = (h - 1) % 12;  // h=1->0, h=2->1, ..., h=12->11
 
     return position;
 }
@@ -144,23 +141,37 @@ uint8_t getHourHandPosition(uint8_t hour, uint8_t minute) {
 /**
  * @brief Calculate minute hand position
  * @param minute: Current minute (0-59)
- * @retval LED position (0-11)
+ * @retval LED position (0-11) where 0=1 o'clock, 11=12 o'clock
  */
 uint8_t getMinuteHandPosition(uint8_t minute) {
     // Map 60 minutes to 12 positions
-    // 0-4 min -> pos 0, 5-9 min -> pos 1, etc.
-    return (minute * 12) / 60;
+    // 0-4 min -> 12 o'clock (pos 11), 5-9 min -> 1 o'clock (pos 0), etc.
+    uint8_t temp_pos = (minute * 12) / 60;  // 0-11
+
+    // Adjust so that 0 minutes points to 12 o'clock (pos 11)
+    if (temp_pos == 0) {
+        return 11;  // 0-4 minutes -> 12 o'clock position (LED12)
+    } else {
+        return temp_pos - 1;  // 5-9 min -> pos 0 (1 o'clock), etc.
+    }
 }
 
 /**
  * @brief Calculate second hand position
  * @param second: Current second (0-59)
- * @retval LED position (0-11)
+ * @retval LED position (0-11) where 0=1 o'clock, 11=12 o'clock
  */
 uint8_t getSecondHandPosition(uint8_t second) {
     // Map 60 seconds to 12 positions
-    // 0-4 sec -> pos 0, 5-9 sec -> pos 1, etc.
-    return (second * 12) / 60;
+    // 0-4 sec -> 12 o'clock (pos 11), 5-9 sec -> 1 o'clock (pos 0), etc.
+    uint8_t temp_pos = (second * 12) / 60;  // 0-11
+
+    // Adjust so that 0 seconds points to 12 o'clock (pos 11)
+    if (temp_pos == 0) {
+        return 11;  // 0-4 seconds -> 12 o'clock position (LED12)
+    } else {
+        return temp_pos - 1;  // 5-9 sec -> pos 0 (1 o'clock), etc.
+    }
 }
 
 /**
@@ -170,7 +181,7 @@ uint8_t getSecondHandPosition(uint8_t second) {
 void displayAnalogClock(void) {
     // Clear all LEDs first
     clearAllClock();
-
+    HAL_Delay(1);
     // Calculate hand positions
     uint8_t hour_pos = getHourHandPosition(clock_time.hours, clock_time.minutes);
     uint8_t minute_pos = getMinuteHandPosition(clock_time.minutes);
@@ -217,7 +228,6 @@ void setClockTime(uint8_t hours, uint8_t minutes, uint8_t seconds) {
     clock_time.seconds = (seconds < 60) ? seconds : 0;
 }
 
-
 /* USER CODE END 0 */
 
 /**
@@ -252,11 +262,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // Exercise 10: Initialize the analog clock system
-  // Set starting time (you can modify this)
-  setClockTime(3, 15, 45);  // Start at 3:15:45
-
-  // Initialize timing
-  clock_time.last_update = HAL_GetTick();
+  setClockTime(4, 58, 00);
 
   // Display initial clock state
   displayAnalogClock();
@@ -269,28 +275,11 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    // Exercise 10: Main analog clock loop
-    // Update time every 1000ms (1 second)
-    uint32_t current_tick = HAL_GetTick();
-
-//    if (current_tick - clock_time.last_update >= 1000) {
-//        // Update the time
-//        updateClockTime();
-//
-//        // Display the updated clock
-//        displayAnalogClock();
-//
-//        // Update the timestamp
-//        clock_time.last_update = current_tick;
-//    }
-    if (current_tick - clock_time.last_update >= 100) {
-            updateClockTime();
-            displayAnalogClock();
-            clock_time.last_update = current_tick;
-        }
-
-    // Small delay to prevent excessive CPU usage
-    HAL_Delay(10);
+    // Exercise 10: Simple analog clock loop
+    // Update time every 1 second
+    updateClockTime();        // Increment time by 1 second
+    displayAnalogClock();     // Update LED display
+    HAL_Delay(1000);         // Wait 1 second
 
     /* USER CODE BEGIN 3 */
   }
@@ -361,27 +350,6 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
-/* USER CODE BEGIN 4 */
-
-/**
- * @brief Demo function to speed up clock for testing
- * Call this instead of the normal update for faster demonstration
- */
-void demoFastClock(void) {
-    uint32_t current_tick = HAL_GetTick();
-
-    // Update every 100ms instead of 1000ms for demo
-    if (current_tick - clock_time.last_update >= 100) {
-        updateClockTime();
-        displayAnalogClock();
-        clock_time.last_update = current_tick;
-    }
-}
-
-/**
- * @brief Test all LED positions sequentially
- * Useful for hardware testing
- */
 void testAllLEDs(void) {
     for (int i = 0; i < 12; i++) {
         clearAllClock();
