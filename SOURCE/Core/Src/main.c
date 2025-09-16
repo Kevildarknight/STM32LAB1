@@ -262,10 +262,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // Exercise 10: Initialize the analog clock system
-  setClockTime(4, 58, 00);
+  setClockTime(8, 30, 59);
 
   // Display initial clock state
-  displayAnalogClock();
+//  displayAnalogClock();
 
   /* USER CODE END 2 */
 
