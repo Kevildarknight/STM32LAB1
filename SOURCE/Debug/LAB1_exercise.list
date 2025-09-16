@@ -89,18 +89,18 @@ void Traffic_Light_Control(TrafficState_t state)
  8000152:	4603      	mov	r3, r0
  8000154:	71fb      	strb	r3, [r7, #7]
     // Turn off all LEDs first (ensure clean state)
-    HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
- 8000156:	2200      	movs	r2, #0
+    HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
+ 8000156:	2201      	movs	r2, #1
  8000158:	2120      	movs	r1, #32
  800015a:	481b      	ldr	r0, [pc, #108]	; (80001c8 <Traffic_Light_Control+0x7c>)
  800015c:	f000 fc88 	bl	8000a70 <HAL_GPIO_WritePin>
-    HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
- 8000160:	2200      	movs	r2, #0
+    HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_SET);
+ 8000160:	2201      	movs	r2, #1
  8000162:	2140      	movs	r1, #64	; 0x40
  8000164:	4818      	ldr	r0, [pc, #96]	; (80001c8 <Traffic_Light_Control+0x7c>)
  8000166:	f000 fc83 	bl	8000a70 <HAL_GPIO_WritePin>
-    HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
- 800016a:	2200      	movs	r2, #0
+    HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
+ 800016a:	2201      	movs	r2, #1
  800016c:	2180      	movs	r1, #128	; 0x80
  800016e:	4816      	ldr	r0, [pc, #88]	; (80001c8 <Traffic_Light_Control+0x7c>)
  8000170:	f000 fc7e 	bl	8000a70 <HAL_GPIO_WritePin>
@@ -124,8 +124,8 @@ void Traffic_Light_Control(TrafficState_t state)
  800018c:	e011      	b.n	80001b2 <Traffic_Light_Control+0x66>
     {
         case TRAFFIC_RED:
-            HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
- 800018e:	2201      	movs	r2, #1
+            HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
+ 800018e:	2200      	movs	r2, #0
  8000190:	2120      	movs	r1, #32
  8000192:	480d      	ldr	r0, [pc, #52]	; (80001c8 <Traffic_Light_Control+0x7c>)
  8000194:	f000 fc6c 	bl	8000a70 <HAL_GPIO_WritePin>
@@ -133,8 +133,8 @@ void Traffic_Light_Control(TrafficState_t state)
  8000198:	e011      	b.n	80001be <Traffic_Light_Control+0x72>
 
         case TRAFFIC_YELLOW:
-            HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_SET);
- 800019a:	2201      	movs	r2, #1
+            HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
+ 800019a:	2200      	movs	r2, #0
  800019c:	2140      	movs	r1, #64	; 0x40
  800019e:	480a      	ldr	r0, [pc, #40]	; (80001c8 <Traffic_Light_Control+0x7c>)
  80001a0:	f000 fc66 	bl	8000a70 <HAL_GPIO_WritePin>
@@ -142,8 +142,8 @@ void Traffic_Light_Control(TrafficState_t state)
  80001a4:	e00b      	b.n	80001be <Traffic_Light_Control+0x72>
 
         case TRAFFIC_GREEN:
-            HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
- 80001a6:	2201      	movs	r2, #1
+            HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
+ 80001a6:	2200      	movs	r2, #0
  80001a8:	2180      	movs	r1, #128	; 0x80
  80001aa:	4807      	ldr	r0, [pc, #28]	; (80001c8 <Traffic_Light_Control+0x7c>)
  80001ac:	f000 fc60 	bl	8000a70 <HAL_GPIO_WritePin>
@@ -152,8 +152,8 @@ void Traffic_Light_Control(TrafficState_t state)
 
         default:
             // Default to RED for safety
-            HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
- 80001b2:	2201      	movs	r2, #1
+            HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
+ 80001b2:	2200      	movs	r2, #0
  80001b4:	2120      	movs	r1, #32
  80001b6:	4804      	ldr	r0, [pc, #16]	; (80001c8 <Traffic_Light_Control+0x7c>)
  80001b8:	f000 fc5a 	bl	8000a70 <HAL_GPIO_WritePin>
