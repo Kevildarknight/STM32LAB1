@@ -279,7 +279,7 @@ int main(void)
     // Update time every 1 second
     updateClockTime();        // Increment time by 1 second
     displayAnalogClock();     // Update LED display
-    HAL_Delay(1000);         // Wait 1 second
+    HAL_Delay(100);         // Wait 1 second
 
     /* USER CODE BEGIN 3 */
   }
